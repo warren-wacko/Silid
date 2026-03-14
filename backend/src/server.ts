@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import connectDB from './config/database';
 
 dotenv.config();
 
@@ -13,10 +14,13 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Silid API is running' });
 });
 
-const PORT = process.env.PORT || 5000;
+const startServer = async (): Promise<void> => {
+  await connectDB();
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+};
 
-export default app;
+startServer();
