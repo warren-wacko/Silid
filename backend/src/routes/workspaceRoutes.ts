@@ -4,6 +4,7 @@ import {
   getAll,
   getById,
   join,
+  getMembers,
 } from '../controllers/workspaceController';
 import { protect } from '../middleware/authMiddleware';
 
@@ -13,5 +14,6 @@ router.post('/join', protect, join);
 router.post('/', protect, create);
 router.get('/', protect, getAll);
 router.get('/:id', protect, getById);
+router.get('/:id/members', protect, getMembers);
 
 export default router;

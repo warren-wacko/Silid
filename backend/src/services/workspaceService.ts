@@ -1,7 +1,6 @@
 import crypto from 'crypto';
 import Workspace, { IWorkspace } from '../models/Workspace';
-import Membership from '../models/Membership';
-
+import Membership, { IMembership } from '../models/Membership';
 export const createWorkspace = async (
   name: string,
   userId: string
@@ -83,4 +82,25 @@ export const joinWorkspace = async (
   });
 
   return workspace;
+};
+
+export const getWorkspaceMembers = async (
+  workspaceId: string,
+  userId: string
+): Promise<IMembership[]> => {
+  const membership = await Membership.findOne({
+    workspace_id: workspaceId,
+    user_id: userId,
+  });
+
+  if (!membership) {
+    throw new Error('Access denied');
+  }
+
+  const members = await Membership.find({ workspace_id: workspaceId }).populate(
+    'user_id',
+    'name email'
+  );
+
+  return members;
 };

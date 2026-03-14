@@ -5,6 +5,7 @@ import {
   getUserWorkspaces,
   getWorkspaceById,
   joinWorkspace,
+  getWorkspaceMembers,
 } from '../services/workspaceService';
 
 export const create = async (
@@ -89,6 +90,26 @@ export const join = async (req: AuthRequest, res: Response): Promise<void> => {
   } catch (error: unknown) {
     if (error instanceof Error) {
       res.status(400).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'Something went wrong' });
+    }
+  }
+};
+
+export const getMembers = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const members = await getWorkspaceMembers(
+      req.params.id as string,
+      req.userId as string
+    );
+
+    res.status(200).json({ members });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      res.status(403).json({ message: error.message });
     } else {
       res.status(500).json({ message: 'Something went wrong' });
     }
