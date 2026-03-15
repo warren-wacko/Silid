@@ -1,19 +1,5 @@
 import Project, { IProject } from '../models/Project';
-import Membership from '../models/Membership';
-
-const verifyMembership = async (
-  workspaceId: string,
-  userId: string
-): Promise<void> => {
-  const membership = await Membership.findOne({
-    workspace_id: workspaceId,
-    user_id: userId,
-  });
-
-  if (!membership) {
-    throw new Error('Access Denied');
-  }
-};
+import verifyMembership from '../utils/verifyMembership';
 
 export const createProject = async (
   workspaceId: string,
@@ -33,7 +19,7 @@ export const createProject = async (
   return project;
 };
 
-export const getProject = async (
+export const getProjects = async (
   workspaceId: string,
   userId: string
 ): Promise<IProject[]> => {

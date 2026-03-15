@@ -1,35 +1,39 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/authMiddleware';
 import {
-  createProject,
-  updateProject,
-  getProjects,
-  deleteProject,
-} from '../services/projectService';
+  createTask,
+  updateTask,
+  getTasks,
+  deleteTask,
+} from '../services/taskService';
 
 export const create = async (
   req: AuthRequest,
   res: Response
 ): Promise<void> => {
   try {
-    const { title, description } = req.body;
     const workspaceId = req.params.workspaceId;
+    const projectId = req.params.projectId;
+
+    const { title, description, assigned_to } = req.body;
 
     if (!title) {
       res.status(400).json({ message: 'Title is required' });
       return;
     }
 
-    const project = await createProject(
+    const task = await createTask(
       workspaceId as string,
+      projectId as string,
       title,
+      req.userId as string,
       description,
-      req.userId as string
+      assigned_to
     );
 
     res.status(201).json({
-      message: 'Project created successfully',
-      project,
+      message: 'Task created successfully',
+      task,
     });
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -46,13 +50,17 @@ export const getAll = async (
 ): Promise<void> => {
   try {
     const workspaceId = req.params.workspaceId;
+    const projectId = req.params.projectId;
 
-    const projects = await getProjects(
+    const tasks = await getTasks(
+      projectId as string,
       workspaceId as string,
       req.userId as string
     );
 
-    res.status(200).json({ projects });
+    res.status(200).json({
+      tasks,
+    });
   } catch (error: unknown) {
     if (error instanceof Error) {
       res.status(400).json({ message: error.message });
@@ -67,26 +75,33 @@ export const update = async (
   res: Response
 ): Promise<void> => {
   try {
-    const projectId = req.params.projectId;
     const workspaceId = req.params.workspaceId;
+    const projectId = req.params.projectId;
+    const taskId = req.params.taskId;
 
     const updates = req.body;
 
-    if (!updates.title && !updates.description) {
+    if (
+      !updates.title &&
+      !updates.description &&
+      !updates.status &&
+      !updates.assigned_to
+    ) {
       res.status(400).json({ message: 'Nothing to update' });
       return;
     }
 
-    const project = await updateProject(
-      projectId as string,
+    const task = await updateTask(
       workspaceId as string,
       req.userId as string,
+      projectId as string,
+      taskId as string,
       updates
     );
 
     res.status(200).json({
-      message: 'Project updated successfully',
-      project,
+      message: 'Task updated successfully',
+      task,
     });
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -102,17 +117,19 @@ export const remove = async (
   res: Response
 ): Promise<void> => {
   try {
-    const projectId = req.params.projectId;
     const workspaceId = req.params.workspaceId;
+    const projectId = req.params.projectId;
+    const taskId = req.params.taskId;
 
-    await deleteProject(
-      projectId as string,
+    await deleteTask(
       workspaceId as string,
-      req.userId as string
+      req.userId as string,
+      projectId as string,
+      taskId as string
     );
 
     res.status(200).json({
-      message: 'Project successfully deleted',
+      message: 'Task deleted successfully',
     });
   } catch (error: unknown) {
     if (error instanceof Error) {
