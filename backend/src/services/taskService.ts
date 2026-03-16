@@ -1,6 +1,11 @@
 import Task, { ITask } from '../models/Task';
 import verifyMembership from '../utils/verifyMembership';
 import { createActivityLog } from './activityLogService';
+import {
+  emitTaskCreated,
+  emitTaskUpdated,
+  emitTaskDeleted,
+} from '../sockets/events';
 
 export const createTask = async (
   workspaceId: string,
@@ -28,6 +33,8 @@ export const createTask = async (
     entity_type: 'task',
     entity_id: task._id.toString(),
   });
+
+  emitTaskCreated(workspaceId, task.toObject());
 
   return task;
 };
@@ -83,6 +90,8 @@ export const updateTask = async (
     entity_id: taskId,
   });
 
+  emitTaskUpdated(workspaceId, task.toObject());
+
   return task;
 };
 
@@ -111,4 +120,6 @@ export const deleteTask = async (
     entity_type: 'task',
     entity_id: taskId,
   });
+
+  emitTaskDeleted(workspaceId, taskId);
 };

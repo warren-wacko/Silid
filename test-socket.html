@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Silid Socket Test</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  </head>
+  <body>
+    <h2>Silid Real-time Test</h2>
+    <div id="status">Disconnected</div>
+    <div id="events"></div>
+
+    <script>
+      const TOKEN =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWI4MzYxZTdhN2Q2YmQwOWQ1YzBlZmQiLCJpYXQiOjE3NzM2ODAyNTMsImV4cCI6MTc3NDI4NTA1M30.yJqBFiKkry9mRVUagvD_Gs6vgHRcviBPRJQijPVaHSI";
+      const WORKSPACE_ID = "69b8363f7a7d6bd09d5c0f00";
+
+      const socket = io("http://localhost:5000", {
+        auth: { token: TOKEN },
+      });
+
+      socket.on("connect", () => {
+        document.getElementById("status").textContent = "Connected!";
+        socket.emit("join:workspace", WORKSPACE_ID);
+        log("Joined workspace: " + WORKSPACE_ID);
+      });
+
+      socket.on("task:created", (task) => {
+        log("NEW TASK: " + task.title);
+      });
+
+      socket.on("task:updated", (task) => {
+        log("TASK UPDATED: " + task.title + " → " + task.status);
+      });
+
+      socket.on("task:deleted", (data) => {
+        log("TASK DELETED: " + data.taskId);
+      });
+
+      socket.on("project:created", (project) => {
+        log("NEW PROJECT: " + project.title);
+      });
+
+      socket.on("user:joined", (data) => {
+        log("USER JOINED: " + data.userId);
+      });
+
+      socket.on("disconnect", () => {
+        document.getElementById("status").textContent = "Disconnected";
+      });
+
+      function log(message) {
+        const div = document.getElementById("events");
+        div.innerHTML =
+          "<p>" +
+          new Date().toLocaleTimeString() +
+          ": " +
+          message +
+          "</p>" +
+          div.innerHTML;
+      }
+    </script>
+  </body>
+</html>

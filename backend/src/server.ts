@@ -1,16 +1,19 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
 import connectDB from './config/database';
 import authRoutes from './routes/authRoutes';
 import workspaceRoutes from './routes/workspaceRoutes';
 import projectRoutes from './routes/projectRoutes';
 import taskRoutes from './routes/taskRoutes';
 import activityLogRoutes from './routes/activityLogRoutes';
+import { initializeSocket } from './sockets';
 
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
 
 app.use(cors());
 app.use(express.json());
@@ -27,9 +30,10 @@ app.get('/health', (req, res) => {
 
 const startServer = async (): Promise<void> => {
   await connectDB();
+  initializeSocket(httpServer);
 
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
+  httpServer.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 };

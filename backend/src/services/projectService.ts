@@ -1,6 +1,8 @@
 import Project, { IProject } from '../models/Project';
 import verifyMembership from '../utils/verifyMembership';
 import { createActivityLog } from './activityLogService';
+import { emitProjectCreated } from '../sockets/events';
+
 export const createProject = async (
   workspaceId: string,
   title: string,
@@ -23,6 +25,8 @@ export const createProject = async (
     entity_type: 'project',
     entity_id: project._id.toString(),
   });
+
+  emitProjectCreated(workspaceId, project.toObject());
 
   return project;
 };
