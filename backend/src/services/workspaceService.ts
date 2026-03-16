@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import Workspace, { IWorkspace } from '../models/Workspace';
 import Membership, { IMembership } from '../models/Membership';
+import { createActivityLog } from './activityLogService';
 export const createWorkspace = async (
   name: string,
   userId: string
@@ -79,6 +80,14 @@ export const joinWorkspace = async (
     user_id: userId,
     workspace_id: workspace._id,
     role: 'member',
+  });
+
+  await createActivityLog({
+    workspace_id: workspace._id.toString(),
+    user_id: userId,
+    action: 'member.joined',
+    entity_type: 'member',
+    entity_id: workspace._id.toString(),
   });
 
   return workspace;

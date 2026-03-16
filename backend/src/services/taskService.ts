@@ -1,5 +1,6 @@
 import Task, { ITask } from '../models/Task';
 import verifyMembership from '../utils/verifyMembership';
+import { createActivityLog } from './activityLogService';
 
 export const createTask = async (
   workspaceId: string,
@@ -18,6 +19,14 @@ export const createTask = async (
     title,
     description,
     assigned_to: assignedTo,
+  });
+
+  await createActivityLog({
+    workspace_id: workspaceId,
+    user_id: userId,
+    action: 'task.created',
+    entity_type: 'task',
+    entity_id: task._id.toString(),
   });
 
   return task;
@@ -66,6 +75,14 @@ export const updateTask = async (
     throw new Error('Task not found');
   }
 
+  await createActivityLog({
+    workspace_id: workspaceId,
+    user_id: userId,
+    action: 'task.updated',
+    entity_type: 'task',
+    entity_id: taskId,
+  });
+
   return task;
 };
 
@@ -86,4 +103,12 @@ export const deleteTask = async (
   if (!task) {
     throw new Error('Task not found');
   }
+
+  await createActivityLog({
+    workspace_id: workspaceId,
+    user_id: userId,
+    action: 'task.deleted',
+    entity_type: 'task',
+    entity_id: taskId,
+  });
 };

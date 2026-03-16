@@ -1,6 +1,6 @@
 import Project, { IProject } from '../models/Project';
 import verifyMembership from '../utils/verifyMembership';
-
+import { createActivityLog } from './activityLogService';
 export const createProject = async (
   workspaceId: string,
   title: string,
@@ -14,6 +14,14 @@ export const createProject = async (
     title,
     description,
     created_by: userId,
+  });
+
+  await createActivityLog({
+    workspace_id: workspaceId,
+    user_id: userId,
+    action: 'project.created',
+    entity_type: 'project',
+    entity_id: project._id.toString(),
   });
 
   return project;
@@ -50,6 +58,14 @@ export const updateProject = async (
     throw new Error('Project not found');
   }
 
+  await createActivityLog({
+    workspace_id: workspaceId,
+    user_id: userId,
+    action: 'project.updated',
+    entity_type: 'project',
+    entity_id: project._id.toString(),
+  });
+
   return project;
 };
 
@@ -68,4 +84,12 @@ export const deleteProject = async (
   if (!project) {
     throw new Error('Project not found');
   }
+
+  await createActivityLog({
+    workspace_id: workspaceId,
+    user_id: userId,
+    action: 'project.deleted',
+    entity_type: 'project',
+    entity_id: project._id.toString(),
+  });
 };
