@@ -9,7 +9,8 @@ import projectRoutes from './routes/projectRoutes';
 import taskRoutes from './routes/taskRoutes';
 import activityLogRoutes from './routes/activityLogRoutes';
 import { initializeSocket } from './sockets';
-
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 dotenv.config();
 
 const app = express();
@@ -23,6 +24,7 @@ app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/workspaces', projectRoutes);
 app.use('/api/workspaces', taskRoutes);
 app.use('/api/workspaces', activityLogRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Silid API is running' });
