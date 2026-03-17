@@ -8,6 +8,8 @@ import workspaceRoutes from './routes/workspaceRoutes';
 import projectRoutes from './routes/projectRoutes';
 import taskRoutes from './routes/taskRoutes';
 import activityLogRoutes from './routes/activityLogRoutes';
+import analyticsRotues from './routes/analyticsRoutes';
+
 import { initializeSocket } from './sockets';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
@@ -24,6 +26,7 @@ app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/workspaces', projectRoutes);
 app.use('/api/workspaces', taskRoutes);
 app.use('/api/workspaces', activityLogRoutes);
+app.use('/api/workspaces', analyticsRotues);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get('/health', (req, res) => {
