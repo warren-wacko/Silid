@@ -3,7 +3,7 @@ import Workspace, { IWorkspace } from '../models/Workspace';
 import Membership, { IMembership } from '../models/Membership';
 import { createActivityLog } from './activityLogService';
 import { emitMemberJoined } from '../sockets/events';
-
+import { emailQueue } from '../jobs/queues/emailQueue';
 export const createWorkspace = async (
   name: string,
   userId: string
@@ -86,6 +86,12 @@ export const joinWorkspace = async (
     role: 'member',
   });
 
+  await emailQueue.add('welcome-email', {
+    to: userId,
+    subject: `Welcome to ${workspace.name}!`,
+    body: `You have successfully joined ${workspace.name} on Silid.`,
+  });
+
   await createActivityLog({
     workspace_id: workspace._id.toString(),
     user_id: userId,
@@ -93,6 +99,8 @@ export const joinWorkspace = async (
     entity_type: 'member',
     entity_id: workspace._id.toString(),
   });
+
+  emitMemberJoined(workspace._id.toString(), userId);
 
   return workspace;
 };
