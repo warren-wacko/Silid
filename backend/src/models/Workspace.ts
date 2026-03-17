@@ -4,6 +4,7 @@ export interface IWorkspace extends Document {
   name: string;
   owner_id: mongoose.Types.ObjectId;
   invite_token: string;
+  share_token: string;
 }
 
 const workspaceSchema = new Schema<IWorkspace>(
@@ -22,6 +23,11 @@ const workspaceSchema = new Schema<IWorkspace>(
       type: String,
       required: true,
       unique: true,
+    },
+    share_token: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
   },
   {
