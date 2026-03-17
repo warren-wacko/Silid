@@ -202,14 +202,3 @@ npm test
 ## License
 
 MIT License
-
-```
-
-Save it — then also create a `.env.example` file in the `backend` folder:
-```
-
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/silid
-JWT_SECRET=your_jwt_secret_here
-REDIS_HOST=localhost
-REDIS_PORT=6379
