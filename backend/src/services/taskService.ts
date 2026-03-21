@@ -49,7 +49,9 @@ export const getTasks = async (
   const tasks = await Task.find({
     project_id: projectId,
     workspace_id: workspaceId,
-  }).sort({ createdAt: -1 });
+  })
+    .populate('assigned_to', 'name email') // ← add this!
+    .sort({ createdAt: -1 });
 
   return tasks;
 };

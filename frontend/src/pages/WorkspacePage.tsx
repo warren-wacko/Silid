@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { getProjects, createProject, deleteProject } from "../api/projects";
 import { getTasks, createTask, updateTask, deleteTask } from "../api/tasks";
+import { getWorkspace, generateShareToken } from "../api/workspaces";
 import { getMembers } from "../api/members";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +68,13 @@ const WorkspacePage = () => {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const [selectedAssignee, setSelectedAssignee] = useState<string>("");
+
+  const { data: workspace } = useQuery({
+    queryKey: ["workspace", workspaceId],
+    queryFn: () => getWorkspace(workspaceId!),
+    enabled: !!workspaceId,
+  });
 
   const { data: projects, isLoading: projectsLoading } = useQuery({
     queryKey: ["projects", workspaceId],
@@ -90,6 +98,18 @@ const WorkspacePage = () => {
     queryKey: ["analytics", workspaceId],
     queryFn: () => getAnalytics(workspaceId!),
     enabled: !!workspaceId,
+  });
+
+  const shareTokenMutation = useMutation({
+    mutationFn: () => generateShareToken(workspaceId!),
+    onSuccess: (token) => {
+      const shareUrl = `${window.location.origin}/share/${token}`;
+      navigator.clipboard.writeText(shareUrl);
+      toast.success("Share link copied to clipboard!");
+    },
+    onError: () => {
+      toast.error("Failed to generate share link");
+    },
   });
 
   const createProjectMutation = useMutation({
@@ -128,13 +148,17 @@ const WorkspacePage = () => {
 
   const createTaskMutation = useMutation({
     mutationFn: () =>
-      createTask(workspaceId!, selectedProjectId!, { title: newTaskTitle }),
+      createTask(workspaceId!, selectedProjectId!, {
+        title: newTaskTitle,
+        assigned_to: selectedAssignee || undefined,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["tasks", workspaceId, selectedProjectId],
       });
       toast.success("Task created!");
       setNewTaskTitle("");
+      setSelectedAssignee("");
       setCreateTaskOpen(false);
     },
     onError: (error) => {
@@ -197,7 +221,51 @@ const WorkspacePage = () => {
           >
             ← Back
           </Button>
-          <h1 className="text-xl font-bold">Silid</h1>
+          <h1 className="text-xl font-bold">
+            {workspace?.name || "Workspace"}
+          </h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                Invite Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Invite Member</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Share this invite token with anyone you want to add to this
+                  workspace:
+                </p>
+                <div className="flex items-center gap-2">
+                  <Input readOnly value={workspace?.invite_token || ""} />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        workspace?.invite_token || "",
+                      );
+                      toast.success("Copied to clipboard!");
+                    }}
+                  >
+                    Copy
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => shareTokenMutation.mutate()}
+            disabled={shareTokenMutation.isPending}
+          >
+            {shareTokenMutation.isPending ? "Generating..." : "Share"}
+          </Button>
         </div>
       </nav>
 
@@ -344,6 +412,27 @@ const WorkspacePage = () => {
                               onChange={(e) => setNewTaskTitle(e.target.value)}
                             />
                           </div>
+                          <div className="space-y-2">
+                            <Label>Assign To (optional)</Label>
+                            <Select
+                              value={selectedAssignee}
+                              onValueChange={setSelectedAssignee}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a member" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {members?.map((member) => (
+                                  <SelectItem
+                                    key={member._id}
+                                    value={member.user_id._id}
+                                  >
+                                    {member.user_id.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                           <Button
                             className="w-full"
                             onClick={() => createTaskMutation.mutate()}
@@ -379,6 +468,22 @@ const WorkspacePage = () => {
                                   <CardTitle className="text-sm">
                                     {task.title}
                                   </CardTitle>
+                                  {task.assigned_to && (
+                                    <div className="flex items-center gap-1 mt-1">
+                                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs">
+                                        {typeof task.assigned_to === "object"
+                                          ? task.assigned_to.name
+                                              .charAt(0)
+                                              .toUpperCase()
+                                          : "?"}
+                                      </div>
+                                      <span className="text-xs text-muted-foreground">
+                                        {typeof task.assigned_to === "object"
+                                          ? task.assigned_to.name
+                                          : "Assigned"}
+                                      </span>
+                                    </div>
+                                  )}
                                 </CardHeader>
                                 <CardContent className="p-3 pt-0">
                                   <Select

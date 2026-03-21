@@ -4,6 +4,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import WorkspacePage from "./pages/WorkspacePage";
+import SharePage from "./pages/SharePage";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuthStore();
@@ -34,6 +35,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/share/:shareToken" element={<SharePage />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

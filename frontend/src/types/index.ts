@@ -1,5 +1,5 @@
 export interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
 }
@@ -34,7 +34,7 @@ export interface Task {
   workspace_id: string;
   title: string;
   description?: string;
-  assigned_to?: string;
+  assigned_to?: string | User;
   status: "todo" | "in_progress" | "completed";
   created_by: string;
   createdAt: string;
