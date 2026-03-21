@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSocket } from "../hooks/useSocket";
 
 const statusColors = {
   todo: "secondary",
@@ -42,6 +43,7 @@ const statusLabels = {
 
 const WorkspacePage = () => {
   const { workspaceId } = useParams<{ workspaceId: string }>();
+  useSocket(workspaceId);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
