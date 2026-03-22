@@ -2,6 +2,8 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export type TaskStatus = 'todo' | 'in_progress' | 'completed';
 
+export type TaskPriority = 'low' | 'medium' | 'high';
+
 export interface ITask extends Document {
   project_id: mongoose.Types.ObjectId;
   workspace_id: mongoose.Types.ObjectId;
@@ -9,6 +11,8 @@ export interface ITask extends Document {
   description?: string;
   assigned_to?: mongoose.Types.ObjectId;
   status: TaskStatus;
+  priority: TaskPriority;
+  due_date?: Date;
   created_by: mongoose.Types.ObjectId;
 }
 
@@ -46,6 +50,14 @@ const taskSchema = new Schema<ITask>(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+    },
+    priority: {
+      type: String,
+      enum: ['low', 'medium', 'high'],
+      default: 'medium',
+    },
+    due_date: {
+      type: Date,
     },
   },
   {

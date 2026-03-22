@@ -15,7 +15,8 @@ export const create = async (
     const workspaceId = req.params.workspaceId;
     const projectId = req.params.projectId;
 
-    const { title, description, assigned_to } = req.body;
+    const { title, description, assigned_to, status, priority, due_date } =
+      req.body;
 
     if (!title) {
       res.status(400).json({ message: 'Title is required' });
@@ -28,7 +29,10 @@ export const create = async (
       title,
       req.userId as string,
       description,
-      assigned_to
+      assigned_to,
+      status,
+      priority,
+      due_date
     );
 
     res.status(201).json({
@@ -85,7 +89,9 @@ export const update = async (
       !updates.title &&
       !updates.description &&
       !updates.status &&
-      !updates.assigned_to
+      !updates.assigned_to &&
+      !updates.priority &&
+      !updates.due_date
     ) {
       res.status(400).json({ message: 'Nothing to update' });
       return;

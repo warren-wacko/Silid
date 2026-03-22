@@ -36,6 +36,8 @@ export interface Task {
   description?: string;
   assigned_to?: string | User;
   status: "todo" | "in_progress" | "completed";
+  priority: "low" | "medium" | "high";
+  due_date?: string;
   created_by: string;
   createdAt: string;
 }

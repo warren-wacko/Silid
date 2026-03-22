@@ -43,6 +43,8 @@ import {
   Cell,
   ResponsiveContainer,
 } from "recharts";
+import type { Task } from "@/types";
+import TaskDetailModal from "../components/ui/task-detail-modal";
 
 const statusColors = {
   todo: "secondary",
@@ -69,6 +71,9 @@ const WorkspacePage = () => {
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
   const [selectedAssignee, setSelectedAssignee] = useState<string>("");
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [newTaskPriority, setNewTaskPriority] = useState<string>("medium");
+  const [newTaskDueDate, setNewTaskDueDate] = useState<string>("");
 
   const { data: workspace } = useQuery({
     queryKey: ["workspace", workspaceId],
@@ -151,6 +156,8 @@ const WorkspacePage = () => {
       createTask(workspaceId!, selectedProjectId!, {
         title: newTaskTitle,
         assigned_to: selectedAssignee || undefined,
+        priority: newTaskPriority,
+        due_date: newTaskDueDate || undefined,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -159,6 +166,8 @@ const WorkspacePage = () => {
       toast.success("Task created!");
       setNewTaskTitle("");
       setSelectedAssignee("");
+      setNewTaskPriority("medium");
+      setNewTaskDueDate("");
       setCreateTaskOpen(false);
     },
     onError: (error) => {
@@ -413,6 +422,22 @@ const WorkspacePage = () => {
                             />
                           </div>
                           <div className="space-y-2">
+                            <Label>Priority</Label>
+                            <Select
+                              value={newTaskPriority}
+                              onValueChange={setNewTaskPriority}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="low">Low</SelectItem>
+                                <SelectItem value="medium">Medium</SelectItem>
+                                <SelectItem value="high">High</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
                             <Label>Assign To (optional)</Label>
                             <Select
                               value={selectedAssignee}
@@ -432,6 +457,16 @@ const WorkspacePage = () => {
                                 ))}
                               </SelectContent>
                             </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Due Date (optional)</Label>
+                            <Input
+                              type="date"
+                              value={newTaskDueDate}
+                              onChange={(e) =>
+                                setNewTaskDueDate(e.target.value)
+                              }
+                            />
                           </div>
                           <Button
                             className="w-full"
@@ -463,7 +498,11 @@ const WorkspacePage = () => {
                           </div>
                           <div className="space-y-2">
                             {tasksByStatus[status].map((task) => (
-                              <Card key={task._id}>
+                              <Card
+                                key={task._id}
+                                className="cursor-pointer"
+                                onClick={() => setSelectedTask(task)}
+                              >
                                 <CardHeader className="p-3">
                                   <CardTitle className="text-sm">
                                     {task.title}
@@ -486,38 +525,43 @@ const WorkspacePage = () => {
                                   )}
                                 </CardHeader>
                                 <CardContent className="p-3 pt-0">
-                                  <Select
-                                    value={task.status}
-                                    onValueChange={(value) =>
-                                      updateTaskMutation.mutate({
-                                        taskId: task._id,
-                                        updates: { status: value },
-                                      })
-                                    }
-                                  >
-                                    <SelectTrigger className="h-7 text-xs">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="todo">Todo</SelectItem>
-                                      <SelectItem value="in_progress">
-                                        In Progress
-                                      </SelectItem>
-                                      <SelectItem value="completed">
-                                        Completed
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="w-full mt-2 h-7 text-xs text-destructive hover:text-destructive"
-                                    onClick={() =>
-                                      deleteTaskMutation.mutate(task._id)
-                                    }
-                                  >
-                                    Delete
-                                  </Button>
+                                  <div onClick={(e) => e.stopPropagation()}>
+                                    <Select
+                                      value={task.status}
+                                      onValueChange={(value) =>
+                                        updateTaskMutation.mutate({
+                                          taskId: task._id,
+                                          updates: { status: value },
+                                        })
+                                      }
+                                    >
+                                      <SelectTrigger className="h-7 text-xs">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="todo">
+                                          Todo
+                                        </SelectItem>
+                                        <SelectItem value="in_progress">
+                                          In Progress
+                                        </SelectItem>
+                                        <SelectItem value="completed">
+                                          Completed
+                                        </SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="w-full mt-2 h-7 text-xs text-destructive hover:text-destructive"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteTaskMutation.mutate(task._id);
+                                      }}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </div>
                                 </CardContent>
                               </Card>
                             ))}
@@ -684,6 +728,14 @@ const WorkspacePage = () => {
           </Tabs>
         </main>
       </div>
+      <TaskDetailModal
+        task={selectedTask}
+        workspaceId={workspaceId!}
+        projectId={selectedProjectId || ""}
+        members={members || []}
+        open={!!selectedTask}
+        onClose={() => setSelectedTask(null)}
+      />
     </div>
   );
 };

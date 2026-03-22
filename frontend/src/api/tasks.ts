@@ -15,7 +15,14 @@ export const getTasks = async (
 export const createTask = async (
   workspaceId: string,
   projectId: string,
-  data: { title: string; description?: string; assigned_to?: string },
+  data: {
+    title: string;
+    description?: string;
+    assigned_to?: string;
+    status?: string;
+    priority?: string;
+    due_date?: string;
+  },
 ): Promise<Task> => {
   const response = await api.post(
     `/workspaces/${workspaceId}/projects/${projectId}/tasks`,

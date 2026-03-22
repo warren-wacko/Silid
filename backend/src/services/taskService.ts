@@ -13,7 +13,10 @@ export const createTask = async (
   title: string,
   userId: string,
   description?: string | undefined,
-  assignedTo?: string | undefined
+  assignedTo?: string | undefined,
+  status?: string | undefined,
+  priority?: string | undefined,
+  due_date?: string | undefined
 ): Promise<ITask> => {
   await verifyMembership(workspaceId, userId);
 
@@ -24,6 +27,9 @@ export const createTask = async (
     title,
     description,
     assigned_to: assignedTo,
+    status,
+    priority,
+    due_date,
   });
 
   await createActivityLog({
@@ -66,6 +72,8 @@ export const updateTask = async (
     description?: string;
     assigned_to?: string;
     status?: string;
+    priority?: string;
+    due_date?: string;
   }
 ): Promise<ITask> => {
   await verifyMembership(workspaceId, userId);
